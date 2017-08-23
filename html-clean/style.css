@@ -1,0 +1,8 @@
+#editor, #html {
+    border: 1px solid black;
+    height: 300px;
+    overflow-y: scroll;
+}
+#html {
+    font-family: monospaced;
+}

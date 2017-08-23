@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+    <head>
+        <title>HTML Clean/Strip</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h4>Content:</h4>
+        <div id="editor" contenteditable>
+        </div>
+        <div>
+            <button id="clearButton">clear</button>
+        </div>
+        <h4>HTML</h4>
+        <div id="html">
+        </div>
+    </body>
+    <script>
+     'use strict';
+     console.info('ping');
+     window.onload = (e) => {
+         console.info('onload: ', e);
+     };
+     const removeElementsFrom = (host, elements = []) => {
+         elements.map(el => [...host.querySelectorAll(el)])
+                 .reduce((acc, next) => acc.concat(next))
+                 .forEach(it => it.remove());
+     };
+     const removeAttributesKeeping = (host, attributes = []) => {
+         host.querySelectorAll('*')
+             .forEach(el => {
+                 [...el.attributes]
+                     .filter(at => !attributes.includes(at.name))
+                     .forEach(at => el.removeAttribute(at.name));
+             });
+     };
+     window.addEventListener('load', () => {
+         editor.addEventListener('input', e => {
+             html.innerText = editor.innerHTML;
+         });
+         clearButton.onclick = (e) => {
+             let newNode = document.createElement('div');
+             newNode.innerHTML = editor.innerHTML;
+             removeElementsFrom(newNode, ['script', 'form', 'iframe']);
+             removeAttributesKeeping(newNode, [
+//                 'id', 
+                 'href', 
+                 'src', 
+                 'alt'
+             ]);
+             editor.innerHTML = newNode.innerHTML;
+             html.innerText = editor.innerHTML;
+         };
+     });
+    </script>
+</html>

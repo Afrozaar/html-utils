@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+
+  <div id="hash-container">
+    <strong>Current hash: </strong> <div id="hash-status"></div>
+  </div>
+
+  <ul>
+    <li><a href="#/moo">moo</a></li>
+    <li><a href="#/boo">boo</a></li>
+    <li><a href="#/foo">foo</a></li>
+  </ul>
+
+  <script>
+    getHash = function(urlOptional) {
+      if (urlOptional !== undefined) {
+        var hashIndex = urlOptional.indexOf('#');
+        if (hashIndex > -1) {
+          return urlOptional.substring(hashIndex);
+        } else {
+          return undefined;
+        }
+      } else {
+        return location.hash;
+      }
+    }
+
+    window.addEventListener('hashchange', function(event) {
+      var status = document.querySelector('#hash-status');
+      status.innerHTML = '<pre>' + getHash(event.oldURL) + ' -&gt; ' + getHash() + '</pre>';
+    });
+  </script>
+</body>
+</html>

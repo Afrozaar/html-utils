@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <!-- <script src="./lib/app.js"></script>
+  <script src="./lib/exif-js.min.js"></script> -->
+</head>
+<body>
+
+  <input id="file" type="file" multiple="true"/>
+
+  <script>
+
+    file.onchange = e => {
+      try {
+
+        (() => {
+          console.info('file changed: ', e);
+          console.info('files: ', file.files);
+
+          [...file.files].forEach(f => EXIF.getData(f, function() {
+            let caption = extractCaption(EXIF.getAllTags(this));
+            console.log(`caption: ${caption}`);
+          }));
+        })();
+      } catch (error) {
+        console.error('err: ', error);
+      }
+    };
+
+  </script>
+</body>
+</html>
