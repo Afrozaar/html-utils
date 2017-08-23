@@ -17,37 +17,52 @@
     </body>
     <script>
      'use strict';
-     console.info('ping');
-     window.onload = (e) => {
-         console.info('onload: ', e);
+     let config = {
+         removeElements: ['script', 'form', 'iframe'],
+         attributesToRetain: {
+             genrc: [/*'id',*/ 'href', 'src', 'alt'],
+             audio: ['class', 'src', 'controls', 'controlslist', 'preload'],
+             video: ['class', 'src', 'controls', 'controlslist', 'preload'],
+             img: ['src', 'alt', 'width', 'height', 'title'],
+             div: ['id']
+         }
      };
-     const removeElementsFrom = (host, elements = []) => {
-         elements.map(el => [...host.querySelectorAll(el)])
-                 .reduce((acc, next) => acc.concat(next))
-                 .forEach(it => it.remove());
+     const removeElements = (host, config) => {
+         (config.removeElements || ['script'])
+             .map(el => [...host.querySelectorAll(el)])
+             .reduce((acc, next) => acc.concat(next))
+             .forEach(it => it.remove());
      };
-     const removeAttributesKeeping = (host, attributes = []) => {
+     const removeAttributes = (host, config) => {
          host.querySelectorAll('*')
              .forEach(el => {
+                 let removeElementAttributeP = at => {
+                     // allow attribute through for removal if attribute name is not
+                     // ... found in config.attributesToRetain[el.name].includes(at.name)
+                     // ... OR else if not found in generic collection.
+                     let atr = config.attributesToRetain[el.localName];
+                     if (atr && atr.includes(at.name)) {
+                         return false;
+                     } else {
+                         return !config.attributesToRetain['genrc'].includes(at.name);
+                     }
+                 };
                  [...el.attributes]
-                     .filter(at => !attributes.includes(at.name))
+                     .filter(removeElementAttributeP)
                      .forEach(at => el.removeAttribute(at.name));
              });
      };
      window.addEventListener('load', () => {
+         //
          editor.addEventListener('input', e => {
              html.innerText = editor.innerHTML;
          });
+         //
          clearButton.onclick = (e) => {
              let newNode = document.createElement('div');
              newNode.innerHTML = editor.innerHTML;
-             removeElementsFrom(newNode, ['script', 'form', 'iframe']);
-             removeAttributesKeeping(newNode, [
-//                 'id', 
-                 'href', 
-                 'src', 
-                 'alt'
-             ]);
+             removeElements(newNode, config);
+             removeAttributes(newNode, config);
              editor.innerHTML = newNode.innerHTML;
              html.innerText = editor.innerHTML;
          };
