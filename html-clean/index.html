@@ -17,41 +17,57 @@
     </body>
     <script>
      'use strict';
-     let config = {
-         removeElements: ['script', 'form', 'iframe'],
-         attributesToRetain: {
-             genrc: [/*'id',*/ 'href', 'src', 'alt'],
-             audio: ['class', 'src', 'controls', 'controlslist', 'preload'],
-             video: ['class', 'src', 'controls', 'controlslist', 'preload'],
-             img: ['src', 'alt', 'width', 'height', 'title'],
-             div: ['id']
+     var AzDomStripper = {
+         /**
+          *
+          */
+         defaultConfig: {
+             elementsToRemove: ['script', 'form', 'iframe'],
+             attributesToRetain: {
+                 genrc: [/*'id',*/ 'href', 'src', 'alt'],
+                 audio: ['class', 'src', 'controls', 'controlslist', 'preload'],
+                 video: ['class', 'src', 'controls', 'controlslist', 'preload'],
+                 img: ['src', 'alt', 'width', 'height', 'title'],
+                 div: ['id']
+             }
+         },
+         /**
+          *
+          */
+         removeElements: function(host, config) {
+             Array.prototype.slice.call(config.elementsToRemove || ['script'])
+                  .map(function(el) {
+                      return Array.prototype.slice.call(host.querySelectorAll(el));
+                  })
+                  .reduce(function(acc, next) {
+                      return acc.concat(next);
+                  })
+                  .forEach(function(it) {
+                      it.remove();
+                  });
+         },
+         /**
+          *
+          */
+         removeAttributes: function(host, config) {
+             Array.prototype.slice.call(host.querySelectorAll('*'))
+                  .forEach(function(el) {
+                      var removeElementAttributeP = function(at) {
+                          var atr = config.attributesToRetain[el.localName];
+                          if (atr && atr.includes(at.name)) {
+                          } else {
+                              return !(config.attributesToRetain['genrc'] || []).includes(at.name);
+                          }
+                      };
+                      Array.prototype.slice.call(el.attributes)
+                           .filter(removeElementAttributeP)
+                           .forEach(function(at) {
+                               el.removeAttribute(at.name);
+                           });
+                  });
          }
      };
-     const removeElements = (host, config) => {
-         (config.removeElements || ['script'])
-             .map(el => [...host.querySelectorAll(el)])
-             .reduce((acc, next) => acc.concat(next))
-             .forEach(it => it.remove());
-     };
-     const removeAttributes = (host, config) => {
-         host.querySelectorAll('*')
-             .forEach(el => {
-                 let removeElementAttributeP = at => {
-                     // allow attribute through for removal if attribute name is not
-                     // ... found in config.attributesToRetain[el.name].includes(at.name)
-                     // ... OR else if not found in generic collection.
-                     let atr = config.attributesToRetain[el.localName];
-                     if (atr && atr.includes(at.name)) {
-                         return false;
-                     } else {
-                         return !config.attributesToRetain['genrc'].includes(at.name);
-                     }
-                 };
-                 [...el.attributes]
-                     .filter(removeElementAttributeP)
-                     .forEach(at => el.removeAttribute(at.name));
-             });
-     };
+     window.AzDomStripper = AzDomStripper;
      window.addEventListener('load', () => {
          //
          editor.addEventListener('input', e => {
@@ -61,8 +77,8 @@
          clearButton.onclick = (e) => {
              let newNode = document.createElement('div');
              newNode.innerHTML = editor.innerHTML;
-             removeElements(newNode, config);
-             removeAttributes(newNode, config);
+             AzDomStripper.removeElements(newNode, AzDomStripper.defaultConfig);
+             AzDomStripper.removeAttributes(newNode, AzDomStripper.defaultConfig);
              editor.innerHTML = newNode.innerHTML;
              html.innerText = editor.innerHTML;
          };
