@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+         table {
+             width: 100%;
+         }
+         iframe {
+             width: 100%;
+         }
+         textarea {
+             width: 100%;
+         }
+        </style>
+    </head>
+    <body>
+        <div id="editor">
+            <table>
+                <th>
+                    <tr>
+                        <td width="50%">Rendered HTML</td>
+                        <td>Source</td>
+                    </tr>
+                </th>
+                <tbody>
+                    <tr>
+                        <td><iframe id="iframe" src="editor-proxy.html" onload="register();">iframe</iframe></td>
+                        <td><textarea id="textarea"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </body>
+    <script>
+     (function(document) {
+         let log = function(message) {
+             if (document.debug) {   
+                 console.info(message, Array.prototype.slice.call(arguments, 1));
+             }
+         };
+         let iframe = document.querySelector('#iframe');
+         let textArea = document.querySelector('#textarea');
+         document.querySelector('#editor').addEventListener('input', function(e) {
+             if (e.target == textArea) {
+                 log('source is textArea: ', e);
+                 iframe.contentWindow.postMessage({source: textArea.value}, '*');
+             } else {
+                 console.error('please report this to the developer/s: The event target is not recognised.', e);
+             }
+         });
+         document.register = function() {
+             iframe.contentWindow.postMessage({register: true},'*');
+         };
+         window.addEventListener('message', e => {
+             log('got message in index: ', e);
+             if (e.data && (e.data.input || e.data.input !== undefined)) {
+                 textArea.value = e.data.input;
+             }
+         });
+     })(document);
+    </script>
+</html>
